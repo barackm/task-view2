@@ -29,7 +29,15 @@ export async function logoutAsync() {
 export async function registerAsync(data: RegisterData) {
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signUp(data);
+  const { error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      data: {
+        names: data.names,
+      },
+    },
+  });
 
   if (error) {
     throw error;

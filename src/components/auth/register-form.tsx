@@ -10,15 +10,17 @@ import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from "
 import { Input } from "@/components/ui/input";
 import { getErrorMessage } from "@/utils/error-handler";
 import { useForm } from "react-hook-form";
-import { loginSchema } from "@/schemas/auth";
+import { registerSchema } from "@/schemas/auth";
 import { toast } from "sonner";
-import { loginAsync } from "@/action/auth";
+import { registerAsync } from "@/action/auth";
 
-export function LoginForm() {
+export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
     },
@@ -30,12 +32,17 @@ export function LoginForm() {
     formState: { errors },
   } = form;
 
-  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
       setIsLoading(true);
-      await loginAsync(data);
-      toast.success("Login successful");
+      await registerAsync({
+        email: data.email,
+        password: data.password,
+        names: `${data.firstName} ${data.lastName}`,
+      });
+      toast.success("Registration successful");
     } catch (error) {
+      console.log(error);
       toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
@@ -45,13 +52,39 @@ export function LoginForm() {
   return (
     <Card className='mx-auto max-w-sm'>
       <CardHeader>
-        <CardTitle className='text-2xl'>Login</CardTitle>
-        <CardDescription>Enter your email below to login to your account</CardDescription>
+        <CardTitle className='text-2xl'>Sign Up</CardTitle>
+        <CardDescription>Enter your details below to create your account</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className='grid gap-4'>
+              <FormField
+                control={control}
+                name='firstName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor='firstName'>First Name</FormLabel>
+                    <FormControl>
+                      <Input id='firstName' {...field} />
+                    </FormControl>
+                    {errors.firstName && <FormMessage>{errors.firstName.message}</FormMessage>}
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name='lastName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor='lastName'>Last Name</FormLabel>
+                    <FormControl>
+                      <Input id='lastName' {...field} />
+                    </FormControl>
+                    {errors.lastName && <FormMessage>{errors.lastName.message}</FormMessage>}
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={control}
                 name='email'
@@ -70,12 +103,7 @@ export function LoginForm() {
                 name='password'
                 render={({ field }) => (
                   <FormItem>
-                    <div className='flex items-center'>
-                      <FormLabel htmlFor='password'>Password</FormLabel>
-                      <Link href='#' className='ml-auto inline-block text-sm underline'>
-                        Forgot your password?
-                      </Link>
-                    </div>
+                    <FormLabel htmlFor='password'>Password</FormLabel>
                     <FormControl>
                       <Input id='password' type='password' {...field} />
                     </FormControl>
@@ -84,15 +112,15 @@ export function LoginForm() {
                 )}
               />
               <Button type='submit' className='w-full' disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
             </div>
           </form>
         </Form>
         <div className='mt-4 text-center text-sm'>
-          Don&apos;t have an account?{" "}
-          <Link href='/register' className='underline'>
-            Sign up
+          Already have an account?{" "}
+          <Link href='login' className='underline'>
+            Login
           </Link>
         </div>
       </CardContent>
