@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import SidebarLayout from "~/components/sidebar-layout";
-import { Toaster } from "~/components/ui/sonner";
+import SidebarLayout from "@/components/sidebar-layout";
+import { Toaster } from "@/components/ui/sonner";
+import AuthProvider from "@/components/auth/auth-provider";
+import QueryProvider from "@/components/query-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,12 +28,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SidebarLayout>{children}</SidebarLayout>
-        <Toaster />
+    <html lang='en'>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <QueryProvider>
+          <AuthProvider>
+            <SidebarLayout>{children}</SidebarLayout>
+          </AuthProvider>
+          <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );
