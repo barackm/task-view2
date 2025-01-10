@@ -26,15 +26,15 @@ export async function logoutAsync() {
   redirect("/login");
 }
 
-export async function registerAsync(data: RegisterData) {
+export async function registerAsync(body: RegisterData) {
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
+    email: body.email,
+    password: body.password,
     options: {
       data: {
-        names: data.names,
+        names: body.names,
       },
     },
   });
@@ -51,10 +51,11 @@ export const getCurrentUser = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error) {
+    console.log({ error });
     throw error;
   }
 
-  const { data: profileData, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", data.user.id)
@@ -63,5 +64,19 @@ export const getCurrentUser = async () => {
     throw profileError;
   }
 
+  const profileData = {
+    ...profile,
+    email: data.user.email,
+  };
+
+  console.log({ profileData });
+
   return profileData;
+};
+
+export const logout = async () => {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  revalidatePath("/login", "layout");
+  redirect("/login");
 };

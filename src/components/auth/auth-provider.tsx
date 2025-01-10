@@ -32,7 +32,8 @@ const AuthProvider = (props: PropsWithChildren) => {
       setLoading(true);
       const userData = await getCurrentUser();
       setStoreUser(userData);
-    } catch {
+    } catch (error: any) {
+      console.log(error);
       toast.error("Error fetching user data");
     } finally {
       setLoading(false);

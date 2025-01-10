@@ -1,9 +1,14 @@
-export type User = {
-  id: string;
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface User {
+  id: number;
+  full_name: string;
   email: string;
-  name?: string;
-  avatar_url?: string;
-};
+  avatar: string | null;
+}
 
 export type LoginData = {
   email: string;

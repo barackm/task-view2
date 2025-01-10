@@ -40,6 +40,7 @@ export function RegisterForm() {
         password: data.password,
         names: `${data.firstName} ${data.lastName}`,
       });
+
       toast.success("Registration successful");
     } catch (error) {
       console.log(error);
@@ -50,7 +51,7 @@ export function RegisterForm() {
   };
 
   return (
-    <Card className='mx-auto max-w-sm'>
+    <Card className='w-[360px] sm:w-[400px]'>
       <CardHeader>
         <CardTitle className='text-2xl'>Sign Up</CardTitle>
         <CardDescription>Enter your details below to create your account</CardDescription>
