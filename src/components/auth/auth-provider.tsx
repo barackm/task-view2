@@ -4,7 +4,7 @@ import React, { PropsWithChildren, useCallback, useEffect, useState } from "reac
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { getCurrentUser } from "@/action/auth";
+import { getCurrentUser } from "@/actions/auth";
 
 const publicRoutes = ["/login", "/register", "/about"];
 

@@ -12,7 +12,7 @@ import { getErrorMessage } from "@/utils/error-handler";
 import { useForm } from "react-hook-form";
 import { loginSchema } from "@/schemas/auth";
 import { toast } from "sonner";
-import { loginAsync } from "@/action/auth";
+import { loginAsync } from "@/actions/auth";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);

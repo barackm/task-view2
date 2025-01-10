@@ -12,7 +12,7 @@ import { getErrorMessage } from "@/utils/error-handler";
 import { useForm } from "react-hook-form";
 import { registerSchema } from "@/schemas/auth";
 import { toast } from "sonner";
-import { registerAsync } from "@/action/auth";
+import { registerAsync } from "@/actions/auth";
 
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);

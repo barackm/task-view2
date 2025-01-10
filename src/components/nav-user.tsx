@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/hooks/use-auth";
-import { logout } from "@/action/auth";
+import { logout } from "@/actions/auth";
 
 export function NavUser() {
   const { user } = useAuthStore();
