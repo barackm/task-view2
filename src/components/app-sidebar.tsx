@@ -24,7 +24,7 @@ const data = {
     },
     {
       title: "Sprints",
-      url: "#",
+      url: "/sprints",
       icon: CheckSquare,
     },
     {

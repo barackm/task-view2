@@ -5,6 +5,7 @@ import SidebarLayout from "@/components/sidebar-layout";
 import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/components/auth/auth-provider";
 import QueryProvider from "@/components/query-provider";
+import { SWRProvider } from "@/components/swr-config";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <AuthProvider>
-            <SidebarLayout>{children}</SidebarLayout>
+            <SWRProvider>
+              <SidebarLayout>{children}</SidebarLayout>
+            </SWRProvider>
           </AuthProvider>
           <Toaster />
         </QueryProvider>
