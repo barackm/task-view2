@@ -12,11 +12,13 @@ export async function getTasksAsync(): Promise<Task[]> {
     .select(
       `
       *,
-      assignee:assignee_id(id, full_name, avatar_url),
-      creator:created_by(id, full_name, avatar_url)
+      assignee:assignee_id(*),
+      creator:created_by(*)
     `,
     )
     .order("created_at", { ascending: false });
+
+  console.log({ error });
 
   if (error) throw error;
   return data;
