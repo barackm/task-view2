@@ -29,7 +29,7 @@ const data = {
     },
     {
       title: "Tasks",
-      url: "#",
+      url: "/tasks",
       icon: Grid,
     },
     {

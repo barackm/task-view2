@@ -16,7 +16,7 @@ const SidebarLayout = (props: PropsWithChildren) => {
       {canRenderSidebar && <AppSidebar />}
       <SidebarInset>
         {canRenderSidebar && <Header />}
-        <div className="flex flex-1 flex-col">{props.children}</div>
+        <div className='flex flex-1 flex-col px-4'>{props.children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
