@@ -43,11 +43,8 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const status = row.getValue("status") as TaskStatus;
-      const statusKey = Object.keys(TaskStatus).find(
-        (key) => TaskStatus[key as keyof typeof TaskStatus] === status
-      ) as keyof typeof STATUS_VARIANTS;
 
-      return <Badge variant={STATUS_VARIANTS[statusKey]}>{status}</Badge>;
+      return <Badge variant={STATUS_VARIANTS[status]}>{status}</Badge>;
     },
     filterFn: (row, id, value) => {
       const status = row.getValue(id) as TaskStatus;
@@ -64,11 +61,7 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const priority = row.getValue("priority") as TaskPriority;
-      const priorityKey = Object.keys(TaskPriority).find(
-        (key) => TaskPriority[key as keyof typeof TaskPriority] === priority
-      ) as keyof typeof PRIORITY_VARIANTS;
-
-      return <Badge variant={PRIORITY_VARIANTS[priorityKey]}>{priority}</Badge>;
+      return <Badge variant={PRIORITY_VARIANTS[priority]}>{priority}</Badge>;
     },
     filterFn: (row, id, value) => {
       const priority = row.getValue(id) as TaskPriority;
