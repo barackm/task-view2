@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { TaskStatusBadge } from "./task-status-badge";
 import { TaskPriorityBadge } from "./task-priority-badge";
 import { TaskActions } from "./task-actions";
+import { getTaskByIdAsync } from "@/actions/tasks";
 
 interface TaskDetailsProps {
   taskId: string;
@@ -17,16 +18,8 @@ interface TaskDetailsProps {
 
 export function TaskDetails({ taskId }: TaskDetailsProps) {
   const router = useRouter();
-  const { data: task, isLoading } = useSWR(
-    [`tasks`, taskId],
-    () => {
-      // getTaskByIdAsync(taskId)
-    },
-    {
-      onError: (err) => {
-        console.error("Failed to fetch task:", err);
-      },
-    }
+  const { data: task, isLoading } = useSWR(`tasks/${taskId}`, () =>
+    getTaskByIdAsync(taskId)
   );
 
   if (isLoading) {
@@ -90,7 +83,7 @@ export function TaskDetails({ taskId }: TaskDetailsProps) {
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                <span>Due by {format(new Date(task.due_date), "PPP")}</span>
+                <span>Due by {format(new Date(task.due_date!), "PPP")}</span>
               </div>
             </div>
           </div>

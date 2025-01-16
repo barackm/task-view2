@@ -3,9 +3,9 @@ import { TaskStatus, TaskPriority } from "@/types/tasks";
 export function enumToFilterOptions<T extends { [key: string]: string }>(
   enumObj: T
 ) {
-  return Object.entries(enumObj).map(([value, label]) => ({
-    label,
-    value,
+  return Object.keys(enumObj).map((key) => ({
+    label: enumObj[key],
+    value: key,
   }));
 }
 

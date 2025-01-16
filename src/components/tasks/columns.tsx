@@ -8,21 +8,7 @@ import { DataTableRowActions } from "@/components/table/data-table-row-actions";
 import { format } from "date-fns";
 import { Task, TaskStatus, TaskPriority } from "@/types/tasks";
 import { AssigneeCell } from "./assignee-cell";
-
-const STATUS_VARIANTS = {
-  [TaskStatus.DONE]: "secondary",
-  [TaskStatus.IN_PROGRESS]: "warning",
-  [TaskStatus.IN_REVIEW]: "primary",
-  [TaskStatus.TODO]: "default",
-  [TaskStatus.BLOCKED]: "destructive",
-} as const;
-
-const PRIORITY_VARIANTS = {
-  [TaskPriority.URGENT]: "destructive",
-  [TaskPriority.HIGH]: "warning",
-  [TaskPriority.MEDIUM]: "secondary",
-  [TaskPriority.LOW]: "default",
-} as const;
+import { PRIORITY_VARIANTS, STATUS_VARIANTS } from "@/lib/utils";
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -57,14 +43,18 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const status = row.getValue("status") as TaskStatus;
-      return (
-        <Badge variant={STATUS_VARIANTS[status]} className="capitalize">
-          {status.toLowerCase().replace("_", " ")}
-        </Badge>
-      );
+      const statusKey = Object.keys(TaskStatus).find(
+        (key) => TaskStatus[key as keyof typeof TaskStatus] === status
+      ) as keyof typeof STATUS_VARIANTS;
+
+      return <Badge variant={STATUS_VARIANTS[statusKey]}>{status}</Badge>;
     },
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+      const status = row.getValue(id) as TaskStatus;
+      const statusKey = Object.keys(TaskStatus).find(
+        (key) => TaskStatus[key as keyof typeof TaskStatus] === status
+      );
+      return value.includes(statusKey);
     },
   },
   {
@@ -74,14 +64,18 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const priority = row.getValue("priority") as TaskPriority;
-      return (
-        <Badge variant={PRIORITY_VARIANTS[priority]} className="capitalize">
-          {priority.toLowerCase()}
-        </Badge>
-      );
+      const priorityKey = Object.keys(TaskPriority).find(
+        (key) => TaskPriority[key as keyof typeof TaskPriority] === priority
+      ) as keyof typeof PRIORITY_VARIANTS;
+
+      return <Badge variant={PRIORITY_VARIANTS[priorityKey]}>{priority}</Badge>;
     },
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+      const priority = row.getValue(id) as TaskPriority;
+      const priorityKey = Object.keys(TaskPriority).find(
+        (key) => TaskPriority[key as keyof typeof TaskPriority] === priority
+      );
+      return value.includes(priorityKey);
     },
   },
   {

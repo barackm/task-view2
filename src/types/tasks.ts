@@ -28,6 +28,10 @@ export interface Task {
   updated_at: string;
   assignee?: User;
   creator?: User;
+  due_date?: string;
 }
 
-export type CreateTaskInput = Pick<Task, "title" | "description" | "sprint_id" | "assignee_id" | "priority">;
+export type CreateTaskInput = Pick<
+  Task,
+  "title" | "description" | "sprint_id" | "assignee_id" | "priority"
+>;

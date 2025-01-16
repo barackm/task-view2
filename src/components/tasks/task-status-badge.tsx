@@ -1,16 +1,12 @@
 import { Badge } from "@/components/ui/badge";
+import { STATUS_VARIANTS } from "@/lib/utils";
+import { TaskStatus } from "@/types/tasks";
 
-const STATUS_VARIANTS = {
-  DONE: "secondary",
-  IN_PROGRESS: "outline",
-  TODO: "default",
-} as const;
+type TaskStatusBadgeProps = {
+  status: TaskStatus;
+};
 
-export function TaskStatusBadge({
-  status,
-}: {
-  status: keyof typeof STATUS_VARIANTS;
-}) {
+export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
   return (
     <Badge variant={STATUS_VARIANTS[status]}>
       {status.toLowerCase().replace("_", " ")}

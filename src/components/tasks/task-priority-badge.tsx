@@ -1,10 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-
-const PRIORITY_VARIANTS = {
-  HIGH: "destructive",
-  MEDIUM: "secondary",
-  LOW: "default",
-} as const;
+import { PRIORITY_VARIANTS } from "@/lib/utils";
 
 export function TaskPriorityBadge({
   priority,

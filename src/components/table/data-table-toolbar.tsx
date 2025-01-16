@@ -1,13 +1,11 @@
 "use client";
 
 import { Table } from "@tanstack/react-table";
-import { SearchIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { DataTableViewOptions } from "./data-table-view-options";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
 
 interface FilterOption {
   label: string;
@@ -39,70 +37,39 @@ export function DataTableToolbar<TData>({
   renderAdditionalActions,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
-  const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const searchParam = searchParams.get("q");
-    if (searchParam) {
-      setSearchQuery(searchParam);
-    }
-  }, [searchParams]);
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams(searchParams);
-    if (searchQuery.trim()) {
-      params.set("q", searchQuery);
-    } else {
-      params.delete("q");
-    }
-    router.replace(`${pathname}?${params.toString()}`);
-  };
-
-  const handleClear = () => {
-    setSearchQuery("");
-    const params = new URLSearchParams(searchParams);
-    params.delete("q");
-    router.replace(`${pathname}?${params.toString()}`);
-  };
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         {searchColumn && (
-          <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-            <div className="relative">
-              <Input
-                placeholder={searchPlaceholder}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 w-[150px] lg:w-[250px] pr-8"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-8 w-8 p-0"
-                  onClick={handleClear}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            {searchQuery.trim().length > 3 && (
+          <div className="relative">
+            <Input
+              placeholder={searchPlaceholder}
+              value={
+                (table.getColumn(searchColumn)?.getFilterValue() as string) ??
+                ""
+              }
+              onChange={(event) =>
+                table
+                  .getColumn(searchColumn)
+                  ?.setFilterValue(event.target.value)
+              }
+              className="h-8 w-[150px] lg:w-[250px] pr-8"
+            />
+            {(table.getColumn(searchColumn)?.getFilterValue() as string)
+              ?.length > 0 && (
               <Button
-                type="submit"
+                variant="ghost"
                 size="sm"
-                className="h-8 w-8"
-                variant="outline"
+                className="absolute right-0 top-0 h-8 w-8 p-0"
+                onClick={() =>
+                  table.getColumn(searchColumn)?.setFilterValue("")
+                }
               >
-                <SearchIcon />
+                <X className="h-4 w-4" />
               </Button>
             )}
-          </form>
+          </div>
         )}
 
         {facetedFilters.map((filter) => {

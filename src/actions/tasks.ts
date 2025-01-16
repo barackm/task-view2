@@ -25,6 +25,25 @@ export async function getTasksAsync(): Promise<Task[]> {
   return data;
 }
 
+export async function getTaskByIdAsync(taskId: string): Promise<Task | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .select(
+      `
+      *,
+      assignee:assignee_id(*),
+      creator:created_by(*)
+    `
+    )
+    .eq("id", taskId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function createTaskAsync(task: CreateTaskInput) {
   const supabase = await createClient();
 
