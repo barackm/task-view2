@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Row } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,10 @@ import {
 
 export interface Action<TData = unknown> {
   label: string;
-  onClick: (row: TData) => void;
+  onClick?: (row: TData) => void;
   shortcut?: string;
   separator?: boolean;
+  link?: string;
 }
 
 interface DataTableRowActionsProps<TData> {
@@ -41,17 +43,30 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align="end" className="w-[160px]">
         {actions.map((action, index) => (
           <>
-            <DropdownMenuItem
-              key={`${action.label}-${index}`}
-              onClick={() => action.onClick(row.original as never)}
-            >
-              {action.label}
-              {action.shortcut && (
-                <span className="ml-auto text-xs tracking-widest opacity-60">
-                  {action.shortcut}
-                </span>
-              )}
-            </DropdownMenuItem>
+            {action.link ? (
+              <Link href={action.link} key={`${action.label}-${index}`}>
+                <DropdownMenuItem>
+                  {action.label}
+                  {action.shortcut && (
+                    <span className="ml-auto text-xs tracking-widest opacity-60">
+                      {action.shortcut}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              </Link>
+            ) : (
+              <DropdownMenuItem
+                key={`${action.label}-${index}`}
+                onClick={() => action.onClick?.(row.original as never)}
+              >
+                {action.label}
+                {action.shortcut && (
+                  <span className="ml-auto text-xs tracking-widest opacity-60">
+                    {action.shortcut}
+                  </span>
+                )}
+              </DropdownMenuItem>
+            )}
             {action.separator && <DropdownMenuSeparator />}
           </>
         ))}

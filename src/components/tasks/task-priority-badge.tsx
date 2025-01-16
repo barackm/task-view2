@@ -7,7 +7,7 @@ export function TaskPriorityBadge({
   priority: keyof typeof PRIORITY_VARIANTS;
 }) {
   return (
-    <Badge variant={PRIORITY_VARIANTS[priority]}>
+    <Badge variant={PRIORITY_VARIANTS[priority]} className="capitalize">
       {priority.toLowerCase()}
     </Badge>
   );

@@ -8,7 +8,7 @@ type TaskStatusBadgeProps = {
 
 export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
   return (
-    <Badge variant={STATUS_VARIANTS[status]}>
+    <Badge variant={STATUS_VARIANTS[status]} className="capitalize">
       {status.toLowerCase().replace("_", " ")}
     </Badge>
   );

@@ -105,10 +105,8 @@ export const columns: ColumnDef<Task>[] = [
           row={row}
           actions={[
             {
-              label: "Edit",
-              onClick: () => {
-                console.log("Edit task", task);
-              },
+              label: "View Details",
+              link: `/tasks/${task.id}`,
             },
             {
               label: "Delete",
