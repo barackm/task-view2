@@ -4,10 +4,12 @@ export interface LoginResponse {
 }
 
 export interface User {
-  id: number;
+  id: string;
   full_name: string;
   email: string;
   avatar: string | null;
+  skills: string;
+  about: string;
 }
 
 export type LoginData = {

@@ -6,18 +6,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
 import { DataTableRowActions } from "@/components/table/data-table-row-actions";
 import { format } from "date-fns";
-import { Task } from "@/types/tasks";
+import { Task, TaskStatus, TaskPriority } from "@/types/tasks";
+import { AssigneeCell } from "./assignee-cell";
 
 const STATUS_VARIANTS = {
-  DONE: "secondary",
-  IN_PROGRESS: "destructive",
-  TODO: "default",
+  [TaskStatus.DONE]: "secondary",
+  [TaskStatus.IN_PROGRESS]: "warning",
+  [TaskStatus.IN_REVIEW]: "primary",
+  [TaskStatus.TODO]: "default",
+  [TaskStatus.BLOCKED]: "destructive",
 } as const;
 
 const PRIORITY_VARIANTS = {
-  HIGH: "destructive",
-  MEDIUM: "secondary",
-  LOW: "default",
+  [TaskPriority.URGENT]: "destructive",
+  [TaskPriority.HIGH]: "warning",
+  [TaskPriority.MEDIUM]: "secondary",
+  [TaskPriority.LOW]: "default",
 } as const;
 
 export const columns: ColumnDef<Task>[] = [
@@ -52,9 +56,9 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = row.getValue("status") as keyof typeof STATUS_VARIANTS;
+      const status = row.getValue("status") as TaskStatus;
       return (
-        <Badge variant={STATUS_VARIANTS[status]}>
+        <Badge variant={STATUS_VARIANTS[status]} className="capitalize">
           {status.toLowerCase().replace("_", " ")}
         </Badge>
       );
@@ -69,17 +73,29 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Priority" />
     ),
     cell: ({ row }) => {
-      const priority = row.getValue(
-        "priority"
-      ) as keyof typeof PRIORITY_VARIANTS;
+      const priority = row.getValue("priority") as TaskPriority;
       return (
-        <Badge variant={PRIORITY_VARIANTS[priority]}>
+        <Badge variant={PRIORITY_VARIANTS[priority]} className="capitalize">
           {priority.toLowerCase()}
         </Badge>
       );
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: "assignee",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Assignee" />
+    ),
+    cell: ({ row }) => <AssigneeCell row={row} />,
+    filterFn: (row, id, value) => {
+      const assignee = row.original.assignee;
+      if (value.includes("unassigned")) {
+        return !assignee;
+      }
+      return assignee ? value.includes(assignee.id) : false;
     },
   },
   {
