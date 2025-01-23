@@ -70,6 +70,15 @@ export async function updateTaskAssigneeAsync(
   revalidatePath("/tasks");
 }
 
+export async function updateTaskAsync(taskId: string, task: Partial<Task>) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("tasks").update(task).eq("id", taskId);
+
+  if (error) throw error;
+  revalidatePath("/tasks");
+}
+
 interface UserTask {
   title: string;
   priority: string;
