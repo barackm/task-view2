@@ -5,6 +5,8 @@ import { Task, CreateTaskInput } from "@/types/tasks";
 import { revalidatePath } from "next/cache";
 import { User } from "@/types/auth";
 
+const BASE_URL = process.env.BACKEND_URL;
+
 export async function getTasksAsync(): Promise<Task[]> {
   const supabase = await createClient();
 
@@ -68,55 +70,103 @@ export async function updateTaskAssigneeAsync(
   revalidatePath("/tasks");
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
+interface UserTask {
+  title: string;
+  priority: string;
+}
 
-  return [
-    {
-      id: "1",
-      full_name: "John Doe",
-      email: "johndoe@gmail.com",
-      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-      about:
-        "Experienced software engineer with a strong focus on backend development.",
-      skills: "JavaScript, Node.js, Express, MongoDB, Docker",
+interface TaskData {
+  title: string;
+  description: string;
+  required_skills: string[];
+  priority: string;
+}
+
+interface UserProfile {
+  id: string;
+  full_name: string;
+  skills: string[];
+  tasks: UserTask[];
+}
+
+interface TaskAssigneeMatchRequest {
+  task_data: TaskData;
+  users: UserProfile[];
+}
+
+export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
+  const supabase = await createClient();
+
+  const { data: task, error } = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("id", taskId)
+    .single();
+  if (error) throw error;
+
+  const { data: users, error: usersError } = await supabase.from("profiles")
+    .select(`
+      *,
+      tasks!tasks_assignee_id_fkey(*)
+    `);
+  if (usersError) throw usersError;
+
+  const body: TaskAssigneeMatchRequest = {
+    task_data: {
+      title: task.title,
+      description: task.description,
+      required_skills: task.required_skills || [],
+      priority: task.priority,
     },
-    {
-      id: "2",
-      full_name: "Jane Smith",
-      email: "janesmith@gmail.com",
-      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-      about:
-        "Creative frontend developer specializing in UI/UX design and React applications.",
-      skills: "HTML, CSS, JavaScript, React, TailwindCSS, Figma",
+    users: users.map((user) => ({
+      id: user.id,
+      full_name: user.full_name,
+      skills:
+        typeof user.skills === "string"
+          ? user.skills
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+      tasks:
+        user.tasks?.map((t) => ({
+          title: t.title,
+          priority: t.priority,
+        })) || [],
+    })),
+  };
+
+  const response = await fetch(`${BASE_URL}/assignee-candidates`, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
     },
-    {
-      id: "3",
-      full_name: "Mike Johnson",
-      email: "mikej@gmail.com",
-      avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-      about:
-        "DevOps engineer with expertise in CI/CD pipelines and cloud infrastructure.",
-      skills: "AWS, Kubernetes, Jenkins, Terraform, Ansible",
-    },
-    {
-      id: "4",
-      full_name: "Sarah Wilson",
-      email: "sarahw@gmail.com",
-      avatar: "https://randomuser.me/api/portraits/women/4.jpg",
-      about:
-        "Data analyst passionate about transforming data into actionable insights.",
-      skills: "Python, SQL, Tableau, Power BI, Pandas, NumPy",
-    },
-    {
-      id: "5",
-      full_name: "David Brown",
-      email: "davidb@gmail.com",
-      avatar: "https://randomuser.me/api/portraits/men/5.jpg",
-      about:
-        "Full-stack developer with a strong foundation in modern web technologies.",
-      skills: "JavaScript, TypeScript, React, Next.js, Node.js, GraphQL",
-    },
-  ];
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch assignee candidates");
+  }
+
+  const responseData = await response.json();
+
+  let suggestions = [];
+  if (responseData.raw) {
+    try {
+      const parsedRaw = JSON.parse(responseData.raw);
+      suggestions = parsedRaw.suggestions || [];
+    } catch (error) {
+      console.error("Error parsing raw response:", error);
+      suggestions = [];
+    }
+  }
+
+  return suggestions
+    .map((suggestion: any) => {
+      const matchedUser = users.find((user) => user.id === suggestion.user_id);
+      if (!matchedUser) return null;
+
+      return matchedUser;
+    })
+    .filter((user: User | null): user is User => user !== null);
 }
