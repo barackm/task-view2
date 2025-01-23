@@ -14,6 +14,19 @@ export function formatDate(date: string) {
   });
 }
 
+export function getImageUrl(path: string | null) {
+  if (!path) return null;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/avatars/${path}`;
+}
+
+const STORAGE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public`;
+
+export function getAvatarUrl(path: string | null) {
+  if (!path) return null;
+  return `${STORAGE_URL}/avatars/${path}`;
+}
+
 export const PRIORITY_VARIANTS = {
   [TaskPriority.URGENT]: "destructive",
   [TaskPriority.HIGH]: "destructive",

@@ -8,9 +8,11 @@ export interface User {
   full_name: string;
   email: string;
   avatar: string | null;
-  skills: string;
+  skills: string | null;
   about: string;
 }
+
+export type UpdateUserInput = Pick<User, "full_name" | "avatar" | "skills">;
 
 export type LoginData = {
   email: string;

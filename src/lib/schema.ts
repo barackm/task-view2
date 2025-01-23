@@ -12,3 +12,12 @@ export const taskFormSchema = z.object({
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;
+
+export const userFormSchema = z.object({
+  full_name: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address"),
+  avatar: z.string().optional(),
+  skills: z.string().min(1, "At least one skill is required"),
+});
+
+export type UserFormValues = z.infer<typeof userFormSchema>;
