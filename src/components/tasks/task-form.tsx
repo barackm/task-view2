@@ -28,10 +28,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { Task, TaskPriority, TaskStatus } from "@/types/tasks";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 interface TaskFormProps {
   task?: Task;
@@ -40,7 +39,6 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
-  const [dateOpen, setDateOpen] = useState(false);
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: task
@@ -56,6 +54,7 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
       : {
           priority: TaskPriority.MEDIUM,
           status: TaskStatus.TODO,
+          due_date: addDays(new Date(), 3),
         },
   });
 
@@ -93,6 +92,34 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.values(TaskStatus).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="priority"
             render={({ field }) => (
               <FormItem>
@@ -123,15 +150,15 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
             control={form.control}
             name="due_date"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Due Date</FormLabel>
-                <Popover open={dateOpen} onOpenChange={setDateOpen}>
+              <FormItem className="flex flex-col">
+                <FormLabel>Date of birth</FormLabel>
+                <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "w-[240px] pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -144,15 +171,15 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="center">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={(date) => {
-                        field.onChange(date);
-                        setDateOpen(false); // Only close after selection
-                      }}
-                      initialFocus
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      //   initialFocus
                     />
                   </PopoverContent>
                 </Popover>

@@ -16,7 +16,11 @@ export function TaskList() {
   const [selectedTask, setSelectedTask] = useState<Task | undefined>();
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const { data: tasks, isLoading } = useSWR("tasks", () => getTasksAsync(), {
+  const {
+    data: tasks,
+    isLoading,
+    mutate: refreshTasks,
+  } = useSWR("tasks", () => getTasksAsync(), {
     onError: (err) => {
       console.error("Failed to fetch tasks:", err);
     },
@@ -92,6 +96,7 @@ export function TaskList() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         task={selectedTask}
+        onSuccess={() => refreshTasks()}
       />
     </>
   );

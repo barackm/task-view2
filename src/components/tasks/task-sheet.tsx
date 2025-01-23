@@ -6,7 +6,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Task } from "@/types/tasks";
+import { CreateTaskInput, Task, TaskStatus } from "@/types/tasks";
 import { TaskForm } from "./task-form";
 import { createTaskAsync, updateTaskAsync } from "@/actions/tasks";
 import { useState } from "react";
@@ -17,9 +17,15 @@ interface TaskSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task?: Task;
+  onSuccess?: () => void;
 }
 
-export function TaskSheet({ open, onOpenChange, task }: TaskSheetProps) {
+export function TaskSheet({
+  open,
+  onOpenChange,
+  task,
+  onSuccess,
+}: TaskSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function onSubmit(data: TaskFormValues) {
@@ -28,23 +34,23 @@ export function TaskSheet({ open, onOpenChange, task }: TaskSheetProps) {
       if (task) {
         const updatedData = {
           ...data,
-          due_date: data.due_date?.toISOString(),
+          due_date: data.due_date?.toISOString() || null,
         };
         await updateTaskAsync(task.id, updatedData);
         toast.success("Task updated successfully");
       } else {
-        const taskData = {
-          ...data,
+        const taskData: CreateTaskInput = {
+          title: data.title,
           description: data.description || null,
-          status: data.status || null,
+          priority: data.priority,
+          status: data.status || TaskStatus.TODO,
           due_date: data.due_date?.toISOString() || null,
-          assignee_id: data.assignee_id || null,
-          sprint_id: data.sprint_id || null,
         };
         await createTaskAsync(taskData);
         toast.success("Task created successfully");
       }
       onOpenChange(false);
+      onSuccess?.();
     } catch (error) {
       console.error(error);
       toast.error("Failed to save task");
