@@ -32,7 +32,7 @@ export function UserForm({ user, onSubmit, isSubmitting }: UserFormProps) {
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      full_name: user.full_name,
+      full_name: user.full_name!,
       email: user.email,
       avatar: user.avatar || "",
       skills: skillsList.join(","),
@@ -71,7 +71,7 @@ export function UserForm({ user, onSubmit, isSubmitting }: UserFormProps) {
                 <AvatarUpload
                   value={field.value}
                   onChange={field.onChange}
-                  fullName={user.full_name}
+                  fullName={user.full_name!}
                   userId={user.id}
                 />
               </FormControl>

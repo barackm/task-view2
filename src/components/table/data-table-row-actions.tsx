@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import React from "react";
 
 export interface Action<TData = unknown> {
   label: string;
@@ -18,6 +19,7 @@ export interface Action<TData = unknown> {
   shortcut?: string;
   separator?: boolean;
   link?: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
 interface DataTableRowActionsProps<TData> {
@@ -25,32 +27,24 @@ interface DataTableRowActionsProps<TData> {
   actions: Action<TData>[];
 }
 
-export function DataTableRowActions<TData>({
-  row,
-  actions,
-}: DataTableRowActionsProps<TData>) {
+export function DataTableRowActions<TData>({ row, actions }: DataTableRowActionsProps<TData>) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-          <span className="sr-only">Open menu</span>
+        <Button variant='ghost' className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'>
+          <MoreHorizontal className='h-4 w-4' />
+          <span className='sr-only'>Open menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
+      <DropdownMenuContent align='end' className='w-[160px]'>
         {actions.map((action, index) => (
-          <>
+          <React.Fragment key={`${action.label}-${index}`}>
             {action.link ? (
               <Link href={action.link} key={`${action.label}-${index}`}>
                 <DropdownMenuItem>
                   {action.label}
                   {action.shortcut && (
-                    <span className="ml-auto text-xs tracking-widest opacity-60">
-                      {action.shortcut}
-                    </span>
+                    <span className='ml-auto text-xs tracking-widest opacity-60'>{action.shortcut}</span>
                   )}
                 </DropdownMenuItem>
               </Link>
@@ -61,14 +55,12 @@ export function DataTableRowActions<TData>({
               >
                 {action.label}
                 {action.shortcut && (
-                  <span className="ml-auto text-xs tracking-widest opacity-60">
-                    {action.shortcut}
-                  </span>
+                  <span className='ml-auto text-xs tracking-widest opacity-60'>{action.shortcut}</span>
                 )}
               </DropdownMenuItem>
             )}
             {action.separator && <DropdownMenuSeparator />}
-          </>
+          </React.Fragment>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

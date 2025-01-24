@@ -4,6 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 import { Task, CreateTaskInput } from "@/types/tasks";
 import { revalidatePath } from "next/cache";
 import { User } from "@/types/auth";
+import { safeJSONParse } from "@/utils/json";
+import axios from "axios";
 
 const BASE_URL = process.env.BACKEND_URL;
 
@@ -17,7 +19,7 @@ export async function getTasksAsync(): Promise<Task[]> {
       *,
       assignee:assignee_id(*),
       creator:created_by(*)
-    `
+    `,
     )
     .order("created_at", { ascending: false });
 
@@ -37,7 +39,7 @@ export async function getTaskByIdAsync(taskId: string): Promise<Task | null> {
       *,
       assignee:assignee_id(*),
       creator:created_by(*)
-    `
+    `,
     )
     .eq("id", taskId)
     .single();
@@ -55,16 +57,10 @@ export async function createTaskAsync(task: CreateTaskInput) {
   revalidatePath("/tasks");
 }
 
-export async function updateTaskAssigneeAsync(
-  taskId: string,
-  assigneeId: string
-) {
+export async function updateTaskAssigneeAsync(taskId: string, assigneeId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("tasks")
-    .update({ assignee_id: assigneeId })
-    .eq("id", taskId);
+  const { error } = await supabase.from("tasks").update({ assignee_id: assigneeId }).eq("id", taskId);
 
   if (error) throw error;
   revalidatePath("/tasks");
@@ -74,6 +70,15 @@ export async function updateTaskAsync(taskId: string, task: Partial<Task>) {
   const supabase = await createClient();
 
   const { error } = await supabase.from("tasks").update(task).eq("id", taskId);
+
+  if (error) throw error;
+  revalidatePath("/tasks");
+}
+
+export async function deleteTaskAsync(taskId: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("tasks").delete().eq("id", taskId);
 
   if (error) throw error;
   revalidatePath("/tasks");
@@ -106,15 +111,10 @@ interface TaskAssigneeMatchRequest {
 export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
   const supabase = await createClient();
 
-  const { data: task, error } = await supabase
-    .from("tasks")
-    .select("*")
-    .eq("id", taskId)
-    .single();
+  const { data: task, error } = await supabase.from("tasks").select("*").eq("id", taskId).single();
   if (error) throw error;
 
-  const { data: users, error: usersError } = await supabase.from("profiles")
-    .select(`
+  const { data: users, error: usersError } = await supabase.from("profiles").select(`
       *,
       tasks!tasks_assignee_id_fkey(*)
     `);
@@ -145,37 +145,38 @@ export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
     })),
   };
 
-  const response = await fetch(`${BASE_URL}/assignee-candidates`, {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  console.log({ body });
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch assignee candidates");
-  }
+  try {
+    const response = await axios.post(`${BASE_URL}/assignee-candidates`, body, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  const responseData = await response.json();
+    const responseData = response.data;
 
-  let suggestions = [];
-  if (responseData.raw) {
-    try {
-      const parsedRaw = JSON.parse(responseData.raw);
+    console.log({ responseData });
+
+    let suggestions = [];
+
+    if (responseData.raw && typeof responseData.raw === "string") {
+      const parsedRaw = safeJSONParse(responseData.raw, { suggestions: [] });
       suggestions = parsedRaw.suggestions || [];
-    } catch (error) {
-      console.error("Error parsing raw response:", error);
-      suggestions = [];
     }
+
+    return suggestions
+      .map((suggestion: any) => {
+        const matchedUser = users.find((user) => user.id === suggestion.user_id);
+        if (!matchedUser) return null;
+
+        return matchedUser;
+      })
+      .filter((user: User | null): user is User => user !== null);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Failed to fetch assignee candidates: ${error.message}`);
+    }
+    throw error;
   }
-
-  return suggestions
-    .map((suggestion: any) => {
-      const matchedUser = users.find((user) => user.id === suggestion.user_id);
-      if (!matchedUser) return null;
-
-      return matchedUser;
-    })
-    .filter((user: User | null): user is User => user !== null);
 }

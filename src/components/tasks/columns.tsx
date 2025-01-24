@@ -12,9 +12,10 @@ import { PRIORITY_VARIANTS, STATUS_VARIANTS } from "@/lib/utils";
 
 interface ColumnsProps {
   onEdit: (task: Task) => void;
+  onDelete: (task: Task) => void;
 }
 
-export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
+export function getColumns({ onEdit, onDelete }: ColumnsProps): ColumnDef<Task>[] {
   return [
     {
       id: "select",
@@ -22,14 +23,14 @@ export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label='Select all'
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label='Select row'
         />
       ),
       enableSorting: false,
@@ -37,15 +38,11 @@ export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
     },
     {
       accessorKey: "title",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Title" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Title' />,
     },
     {
       accessorKey: "status",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Status' />,
       cell: ({ row }) => {
         const status = row.getValue("status") as TaskStatus;
 
@@ -53,17 +50,13 @@ export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
       },
       filterFn: (row, id, value) => {
         const status = row.getValue(id) as TaskStatus;
-        const statusKey = Object.keys(TaskStatus).find(
-          (key) => TaskStatus[key as keyof typeof TaskStatus] === status
-        );
+        const statusKey = Object.keys(TaskStatus).find((key) => TaskStatus[key as keyof typeof TaskStatus] === status);
         return value.includes(statusKey);
       },
     },
     {
       accessorKey: "priority",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Priority" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Priority' />,
       cell: ({ row }) => {
         const priority = row.getValue("priority") as TaskPriority;
         return <Badge variant={PRIORITY_VARIANTS[priority]}>{priority}</Badge>;
@@ -71,16 +64,14 @@ export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
       filterFn: (row, id, value) => {
         const priority = row.getValue(id) as TaskPriority;
         const priorityKey = Object.keys(TaskPriority).find(
-          (key) => TaskPriority[key as keyof typeof TaskPriority] === priority
+          (key) => TaskPriority[key as keyof typeof TaskPriority] === priority,
         );
         return value.includes(priorityKey);
       },
     },
     {
       accessorKey: "assignee",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Assignee" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Assignee' />,
       cell: ({ row }) => <AssigneeCell row={row} />,
       filterFn: (row, id, value) => {
         const assignee = row.original.assignee;
@@ -92,9 +83,7 @@ export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
     },
     {
       accessorKey: "due_date",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Due Date" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Due Date' />,
       cell: ({ row }) => {
         const date = row.original.created_at;
         return format(new Date(date), "PPP");
@@ -104,7 +93,6 @@ export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
       id: "actions",
       cell: ({ row }) => {
         const task = row.original;
-
         return (
           <DataTableRowActions
             row={row}
@@ -114,15 +102,9 @@ export function getColumns({ onEdit }: ColumnsProps): ColumnDef<Task>[] {
                 onClick: () => onEdit(task),
               },
               {
-                label: "View Details",
-                link: `/tasks/${task.id}`,
-              },
-              {
                 label: "Delete",
-                onClick: () => {
-                  console.log("Delete task", task);
-                },
-                separator: true,
+                onClick: () => onDelete(task),
+                variant: "destructive",
               },
             ]}
           />

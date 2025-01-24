@@ -32,3 +32,12 @@ export async function updateUserAsync(userId: string, userData: UpdateUserInput)
 
   revalidatePath("/", "layout");
 }
+
+export async function updateUserStatusAsync(userId: string, status: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("profiles").update({ status }).eq("id", userId);
+
+  if (error) throw error;
+  return data;
+}

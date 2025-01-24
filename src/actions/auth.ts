@@ -69,8 +69,6 @@ export const getCurrentUser = async () => {
     email: data.user.email,
   };
 
-  console.log({ profileData });
-
   return profileData;
 };
 

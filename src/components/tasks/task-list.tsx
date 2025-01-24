@@ -7,14 +7,16 @@ import { TaskSheet } from "./task-sheet";
 import { DataTable } from "@/components/table/data-table";
 import { getColumns } from "./columns";
 import useSWR from "swr";
-import { getTasksAsync } from "@/actions/tasks";
+import { getTasksAsync, deleteTaskAsync } from "@/actions/tasks";
 import { fetchUsers } from "@/actions/users";
 import { statusOptions, priorityOptions } from "./utils";
 import { Task } from "@/types/tasks";
+import { DeleteTaskDialog } from "./delete-task-dialog";
 
 export function TaskList() {
   const [selectedTask, setSelectedTask] = useState<Task | undefined>();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const {
     data: tasks,
@@ -37,18 +39,30 @@ export function TaskList() {
     setSheetOpen(true);
   };
 
-  const columns = getColumns({ onEdit: handleEdit });
+  const handleDelete = async (task: Task) => {
+    try {
+      await deleteTaskAsync(task.id);
+      refreshTasks();
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
+  };
+
+  const columns = getColumns({
+    onEdit: handleEdit,
+    onDelete: (task) => setTaskToDelete(task),
+  });
 
   return (
     <>
-      <div className="mb-4">
+      <div className='mb-4'>
         <Button
           onClick={() => {
             setSelectedTask(undefined);
             setSheetOpen(true);
           }}
         >
-          <PlusIcon className="mr-2 h-4 w-4" />
+          <PlusIcon className='mr-2 h-4 w-4' />
           New Task
         </Button>
       </div>
@@ -82,21 +96,24 @@ export function TaskList() {
               title: "Assignee",
               options: [
                 { label: "Unassigned", value: "unassigned" },
-                ...(users?.map((user) => ({
-                  label: user.full_name,
-                  value: user.id,
-                })) || []),
+                ...(users
+                  ?.filter((user) => user.full_name)
+                  .map((user) => ({
+                    label: user.full_name!,
+                    value: user.id,
+                  })) || []),
               ],
             },
           ],
         }}
       />
 
-      <TaskSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        task={selectedTask}
-        onSuccess={() => refreshTasks()}
+      <TaskSheet open={sheetOpen} onOpenChange={setSheetOpen} task={selectedTask} onSuccess={() => refreshTasks()} />
+      <DeleteTaskDialog
+        open={!!taskToDelete}
+        onOpenChange={(open) => !open && setTaskToDelete(null)}
+        task={taskToDelete}
+        onConfirm={handleDelete}
       />
     </>
   );
