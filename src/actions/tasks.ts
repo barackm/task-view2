@@ -92,7 +92,6 @@ interface UserTask {
 interface TaskData {
   title: string;
   description: string;
-  required_skills: string[];
   priority: string;
 }
 
@@ -124,7 +123,6 @@ export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
     task_data: {
       title: task.title,
       description: task.description,
-      required_skills: task.required_skills || [],
       priority: task.priority,
     },
     users: users.map((user) => ({
