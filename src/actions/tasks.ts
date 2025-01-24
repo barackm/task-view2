@@ -23,8 +23,6 @@ export async function getTasksAsync(): Promise<Task[]> {
     )
     .order("created_at", { ascending: false });
 
-  console.log({ error });
-
   if (error) throw error;
   return data;
 }
@@ -143,8 +141,6 @@ export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
     })),
   };
 
-  console.log({ body });
-
   try {
     const response = await axios.post(`${BASE_URL}/assignee-candidates`, body, {
       headers: {
@@ -153,8 +149,6 @@ export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
     });
 
     const responseData = response.data;
-
-    console.log({ responseData });
 
     let suggestions = [];
 
