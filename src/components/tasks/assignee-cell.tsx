@@ -15,7 +15,7 @@ import { fetchUsers } from "@/actions/users";
 import { useState } from "react";
 import { Row } from "@tanstack/react-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { SparklesIcon, Loader2, InfoIcon } from "lucide-react";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
 import { User } from "@/types/auth";
@@ -69,6 +69,7 @@ export function AssigneeCell({ row }: AssigneeCellProps) {
     try {
       setIsLoading(true);
       await updateTaskAssigneeAsync(task.id, assigneeId);
+      mutate("tasks");
     } catch (error) {
       console.error("Failed to assign task:", error);
     } finally {

@@ -21,7 +21,7 @@ export async function getTasksAsync(): Promise<Task[]> {
       creator:created_by(*)
     `,
     )
-    .order("created_at", { ascending: false });
+    .order("updated_at", { ascending: true });
 
   if (error) throw error;
   return data;
