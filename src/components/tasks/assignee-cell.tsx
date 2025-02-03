@@ -71,7 +71,7 @@ export function AssigneeCell({ row }: AssigneeCellProps) {
       await updateTaskAssigneeAsync(task.id, assigneeId);
       mutate("tasks");
     } catch (error) {
-      console.error("Failed to assign task:", error);
+      console.log("Failed to assign task:", error);
     } finally {
       setIsLoading(false);
     }

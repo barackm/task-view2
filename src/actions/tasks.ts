@@ -60,6 +60,8 @@ export async function updateTaskAssigneeAsync(taskId: string, assigneeId: string
 
   const { error } = await supabase.from("tasks").update({ assignee_id: assigneeId }).eq("id", taskId);
 
+  console.log({ error });
+
   if (error) throw error;
   revalidatePath("/tasks");
 }
@@ -152,6 +154,7 @@ export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
 
     let suggestions = [];
 
+    console.log({ responseData });
     if (responseData.raw && typeof responseData.raw === "string") {
       const parsedRaw = safeJSONParse(responseData.raw, { suggestions: [] });
       suggestions = parsedRaw.suggestions || [];

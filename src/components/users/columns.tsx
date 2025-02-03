@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
 import { DataTableRowActions } from "@/components/table/data-table-row-actions";
 import { User } from "@/types/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileDialog } from "@/components/profile/profile-dialog";
+import { Button } from "@/components/ui/button";
+import { UserNameCell } from "./user-name-cell";
 
 interface ColumnsProps {
   onEdit: (user: User) => void;
@@ -19,20 +23,28 @@ export function getColumns({ onEdit, isAdmin }: ColumnsProps): ColumnDef<User>[]
       header: ({ column }) => <DataTableColumnHeader column={column} title='Name' />,
       cell: ({ row }) => {
         const user = row.original;
-        return (
-          <div className='flex items-center gap-2'>
-            <Avatar className='h-8 w-8'>
-              <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback>{user.full_name?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span>{user.full_name}</span>
-          </div>
-        );
+        return <UserNameCell user={user} />;
       },
     },
     {
-      accessorKey: "email",
-      header: ({ column }) => <DataTableColumnHeader column={column} title='Email' />,
+      accessorKey: "skills",
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Skills' />,
+      cell: ({ row }) => {
+        const skills = row.original.skills?.split(",").map((skill) => skill.trim()) || [];
+        return (
+          <div className='flex flex-wrap gap-1'>
+            {skills.length > 0 ? (
+              skills.map((skill, index) => (
+                <Badge key={index} variant='outline' className='text-xs'>
+                  {skill}
+                </Badge>
+              ))
+            ) : (
+              <span className='text-muted-foreground text-sm'>No skills listed</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "role",
