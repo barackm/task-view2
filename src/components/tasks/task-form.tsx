@@ -3,42 +3,30 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { taskFormSchema, TaskFormValues } from "@/lib/schema";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format, addDays } from "date-fns";
 import { Task, TaskPriority, TaskStatus } from "@/types/tasks";
 import { cn } from "@/lib/utils";
+import { Loader2, SparklesIcon } from "lucide-react";
+import { useState } from "react";
+import { suggestDescriptionAsync } from "@/actions/tasks";
+import { toast } from "sonner";
 
 interface TaskFormProps {
   task?: Task;
-  onSubmit: (data: TaskFormValues) => void;
+  onSubmit: (data: TaskFormValues) => Promise<void>;
   isSubmitting?: boolean;
 }
 
 export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
+  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: task
@@ -58,17 +46,36 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
         },
   });
 
+  const handleGetSuggestion = async () => {
+    const title = form.getValues("title");
+    if (!title) {
+      toast.error("Please enter a title first");
+      return;
+    }
+
+    try {
+      setIsLoadingSuggestion(true);
+      const suggestion = await suggestDescriptionAsync(title);
+      form.setValue("description", suggestion);
+    } catch (error) {
+      toast.error("Failed to get description suggestion");
+      console.error(error);
+    } finally {
+      setIsLoadingSuggestion(false);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
         <FormField
           control={form.control}
-          name="title"
+          name='title'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="Task title..." {...field} />
+                <Input placeholder='Task title...' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -77,32 +84,45 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
 
         <FormField
           control={form.control}
-          name="description"
+          name='description'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel className='flex items-center justify-between'>
+                <span>Description</span>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={handleGetSuggestion}
+                  disabled={isLoadingSuggestion}
+                >
+                  {isLoadingSuggestion ? (
+                    <Loader2 className='h-4 w-4 animate-spin' />
+                  ) : (
+                    <SparklesIcon className='h-4 w-4' />
+                  )}
+                  <span className='ml-2'>Suggest</span>
+                </Button>
+              </FormLabel>
               <FormControl>
-                <Textarea placeholder="Task description..." {...field} />
+                <Textarea placeholder='Task description...' className='min-h-[100px]' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className='grid grid-cols-2 gap-4'>
           <FormField
             control={form.control}
-            name="status"
+            name='status'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder='Select status' />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -120,17 +140,14 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
 
           <FormField
             control={form.control}
-            name="priority"
+            name='priority'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Priority</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select priority" />
+                      <SelectValue placeholder='Select priority' />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -148,37 +165,28 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
 
           <FormField
             control={form.control}
-            name="due_date"
+            name='due_date'
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem className='flex flex-col'>
                 <FormLabel>Date of birth</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
-                        className={cn(
-                          "w-[240px] pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
+                        className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                       >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className='w-auto p-0' align='start'>
                     <Calendar
-                      mode="single"
+                      mode='single'
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                       //   initialFocus
                     />
                   </PopoverContent>
@@ -189,8 +197,8 @@ export function TaskForm({ task, onSubmit, isSubmitting }: TaskFormProps) {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : task ? "Update Task" : "Create Task"}
+        <Button type='submit' className='w-full' disabled={isSubmitting}>
+          {isSubmitting ? <Loader2 className='mr-2 h-4 w-4 animate-spin' /> : task ? "Update Task" : "Create Task"}
         </Button>
       </form>
     </Form>

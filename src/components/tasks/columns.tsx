@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { Task, TaskStatus, TaskPriority } from "@/types/tasks";
 import { AssigneeCell } from "./assignee-cell";
 import { PRIORITY_VARIANTS, STATUS_VARIANTS } from "@/lib/utils";
+import { TaskTitleCell } from "./task-title-cell";
 
 interface ColumnsProps {
   onEdit: (task: Task) => void;
@@ -39,6 +40,7 @@ export function getColumns({ onEdit, onDelete }: ColumnsProps): ColumnDef<Task>[
     {
       accessorKey: "title",
       header: ({ column }) => <DataTableColumnHeader column={column} title='Title' />,
+      cell: ({ row }) => <TaskTitleCell task={row.original} />,
     },
     {
       accessorKey: "status",

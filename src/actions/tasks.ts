@@ -175,3 +175,28 @@ export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
     throw error;
   }
 }
+
+interface SuggestDescriptionResponse {
+  description: string;
+}
+
+export async function suggestDescriptionAsync(title: string): Promise<string> {
+  try {
+    const response = await axios.post<SuggestDescriptionResponse>(
+      `${BASE_URL}/suggest-description`,
+      { title },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    return response.data.description;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Failed to get description suggestion: ${error.message}`);
+    }
+    throw error;
+  }
+}
