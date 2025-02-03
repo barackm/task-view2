@@ -1,3 +1,5 @@
+import { Task } from "./tasks";
+
 export interface LoginResponse {
   access_token: string;
   token_type: string;
@@ -16,6 +18,8 @@ export interface User {
   about: string;
   role: UserRole;
   status: UserStatus;
+  tasks?: Task[];
+  updated_at: string;
 }
 
 export enum UserStatus {

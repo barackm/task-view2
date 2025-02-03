@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon, RotateCwIcon } from "lucide-react";
 import { TaskSheet } from "./task-sheet";
 import { DataTable } from "@/components/table/data-table";
 import { getColumns } from "./columns";
@@ -12,11 +12,13 @@ import { fetchUsers } from "@/actions/users";
 import { statusOptions, priorityOptions } from "./utils";
 import { Task } from "@/types/tasks";
 import { DeleteTaskDialog } from "./delete-task-dialog";
+import { toast } from "sonner";
 
 export function TaskList() {
   const [selectedTask, setSelectedTask] = useState<Task | undefined>();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
     data: tasks,
@@ -33,6 +35,18 @@ export function TaskList() {
       console.error("Failed to fetch users:", err);
     },
   });
+
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await refreshTasks();
+      toast.success("Tasks refreshed");
+    } catch {
+      toast.error("Failed to refresh tasks");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleEdit = (task: Task) => {
     setSelectedTask(task);
@@ -53,9 +67,12 @@ export function TaskList() {
     onDelete: (task) => setTaskToDelete(task),
   });
 
+  // Sort tasks by updated_at in descending order
+  const sortedTasks = tasks?.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()) || [];
+
   return (
     <>
-      <div className='mb-4'>
+      <div className='flex items-center justify-between mb-4'>
         <Button
           onClick={() => {
             setSelectedTask(undefined);
@@ -65,11 +82,14 @@ export function TaskList() {
           <PlusIcon className='mr-2 h-4 w-4' />
           New Task
         </Button>
+        <Button variant='outline' size='icon' onClick={handleRefresh} disabled={isRefreshing}>
+          <RotateCwIcon className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+        </Button>
       </div>
 
       <DataTable
         columns={columns}
-        data={tasks || []}
+        data={sortedTasks}
         config={{
           enableRowSelection: true,
           enableSorting: true,

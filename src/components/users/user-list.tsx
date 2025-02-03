@@ -5,13 +5,17 @@ import { DataTable } from "@/components/table/data-table";
 import { getColumns } from "./columns";
 import useSWR from "swr";
 import { fetchUsers } from "@/actions/users";
-import { UserSheet } from "./user-sheet";
 import { User, UserRole } from "@/types/auth";
+import { UserSheet } from "./user-sheet";
+import { Button } from "@/components/ui/button";
+import { RotateCwIcon } from "lucide-react";
+import { toast } from "sonner";
 import { useAuthStore } from "@/hooks/use-auth";
 
 export function UserList() {
   const [selectedUser, setSelectedUser] = useState<User | undefined>();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { user } = useAuthStore();
 
   const {
@@ -24,6 +28,18 @@ export function UserList() {
     },
   });
 
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await refreshUsers();
+      toast.success("Users refreshed");
+    } catch {
+      toast.error("Failed to refresh users");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleEdit = (user: User) => {
     setSelectedUser(user);
     setSheetOpen(true);
@@ -32,16 +48,20 @@ export function UserList() {
   const isAdmin = user?.role === UserRole.ADMIN;
   const columns = getColumns({ onEdit: handleEdit, isAdmin });
 
-  const statusOptions = [
-    { label: "Active", value: "active" },
-    { label: "Inactive", value: "inactive" },
-  ];
+  // Sort users by updated_at in descending order
+  const sortedUsers = users?.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()) || [];
 
   return (
     <>
+      <div className='flex justify-end mb-4'>
+        <Button variant='outline' size='icon' onClick={handleRefresh} disabled={isRefreshing}>
+          <RotateCwIcon className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+
       <DataTable
         columns={columns}
-        data={users || []}
+        data={sortedUsers}
         config={{
           enableSorting: true,
           enableFiltering: true,
@@ -55,7 +75,10 @@ export function UserList() {
             {
               column: "status",
               title: "Status",
-              options: statusOptions,
+              options: [
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+              ],
             },
             {
               column: "role",

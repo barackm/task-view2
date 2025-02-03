@@ -8,6 +8,7 @@ import { TaskPriorityBadge } from "./task-priority-badge";
 import { CalendarDays, Clock, UserCircle } from "lucide-react";
 import { AssigneeCell } from "./assignee-cell";
 import { Row } from "@tanstack/react-table";
+import { EstimateCell } from "./estimate-cell";
 
 interface TaskDetailsDialogProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export function TaskDetailsDialog({ isOpen, onOpenChange, task }: TaskDetailsDia
                 <UserCircle className='h-4 w-4' />
                 <AssigneeCell row={mockRow} />
               </div>
+              <EstimateCell task={task} />
             </div>
           </div>
 

@@ -29,6 +29,7 @@ export interface Task {
   assignee?: User;
   creator?: User;
   due_date: string | null;
+  original_estimate: string | null;
 }
 
 export type CreateTaskInput = {

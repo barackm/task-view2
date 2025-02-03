@@ -200,3 +200,54 @@ export async function suggestDescriptionAsync(title: string): Promise<string> {
     throw error;
   }
 }
+
+interface SuggestDurationResponse {
+  duration: string;
+  explanation: string;
+}
+
+export async function suggestDurationAsync(taskId: string): Promise<SuggestDurationResponse> {
+  const task = await getTaskByIdAsync(taskId);
+  if (!task || !task.assignee) {
+    throw new Error("Task must have an assignee to suggest duration");
+  }
+
+  try {
+    const response = await axios.post<SuggestDurationResponse>(
+      `${BASE_URL}/suggest-duration`,
+      {
+        title: task.title,
+        description: task.description,
+        assignee: {
+          id: task.assignee.id,
+          full_name: task.assignee.full_name,
+          skills: task.assignee.skills?.split(",").map((s) => s.trim()),
+          tasks: task.assignee.tasks?.map((t) => ({
+            title: t.title,
+            priority: t.priority,
+          })),
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Failed to get duration suggestion: ${error.message}`);
+    }
+    throw error;
+  }
+}
+
+export async function updateTaskEstimateAsync(taskId: string, estimate: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("tasks").update({ original_estimate: estimate }).eq("id", taskId);
+
+  if (error) throw error;
+  revalidatePath("/tasks");
+}

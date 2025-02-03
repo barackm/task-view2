@@ -10,6 +10,7 @@ import { Task, TaskStatus, TaskPriority } from "@/types/tasks";
 import { AssigneeCell } from "./assignee-cell";
 import { PRIORITY_VARIANTS, STATUS_VARIANTS } from "@/lib/utils";
 import { TaskTitleCell } from "./task-title-cell";
+import { EstimateCell } from "./estimate-cell";
 
 interface ColumnsProps {
   onEdit: (task: Task) => void;
@@ -90,6 +91,11 @@ export function getColumns({ onEdit, onDelete }: ColumnsProps): ColumnDef<Task>[
         const date = row.original.created_at;
         return format(new Date(date), "PPP");
       },
+    },
+    {
+      accessorKey: "original_estimate",
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Estimate' />,
+      cell: ({ row }) => <EstimateCell task={row.original} />,
     },
     {
       id: "actions",
