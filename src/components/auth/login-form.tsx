@@ -36,6 +36,7 @@ export function LoginForm() {
       await loginAsync(data);
       toast.success("Login successful");
     } catch (error) {
+      console.error(error);
       toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);

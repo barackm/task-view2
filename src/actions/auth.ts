@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 export async function loginAsync(data: { email: string; password: string }) {
   const supabase = await createClient();
 
+  console.log({ data });
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {

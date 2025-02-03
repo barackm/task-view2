@@ -157,6 +157,7 @@ export async function fetchAssigneeCandidates(taskId: string): Promise<User[]> {
     console.log({ responseData });
     if (responseData.raw && typeof responseData.raw === "string") {
       const parsedRaw = safeJSONParse(responseData.raw, { suggestions: [] });
+      console.log({ parsedRaw });
       suggestions = parsedRaw.suggestions || [];
     }
 
